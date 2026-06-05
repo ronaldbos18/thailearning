@@ -1,4 +1,4 @@
-import type { ThaiCharacter } from "./types";
+import type { ContentFrequency, ThaiCharacter } from "./types";
 
 // Phase 1 treats common written vowel signs and combinations as recognition units.
 // A dotted circle (◌) marks where the consonant sits when a vowel wraps around it.
@@ -32,11 +32,11 @@ const base = [
   ["vow_sara_ueea", "เ◌ือ", "sara uea", "uea", "Long uea keeps เ before, ื above, and อ after without ะ.", "long uea"],
   ["vow_sara_ua", "◌ัวะ", "sara ua short", "ua", "Short ua has the above cap, ว to the right, and a final ะ stop.", "short ua"],
   ["vow_sara_uua", "◌ัว", "sara ua", "ua", "Long ua keeps the above cap plus ว, but drops the final ะ stop.", "long ua"],
-  ["vow_ru", "ฤ", "ru", "rue/ri", "The special vocalic-r sign is a standalone rare vowel-like character.", "vocalic r"],
-  ["vow_ruu", "ฤๅ", "ruu", "rue", "The long vocalic-r form adds the trailing length mark ๅ.", "long vocalic r"],
-  ["vow_lu", "ฦ", "lu", "lue", "The special vocalic-l sign is rare but part of the traditional set.", "vocalic l"],
-  ["vow_luu", "ฦๅ", "luu", "lue", "The long vocalic-l form adds the trailing length mark ๅ and is extremely rare.", "long vocalic l"]
-] as const;
+  ["vow_ru", "ฤ", "ru", "rue/ri", "The special vocalic-r sign is a standalone uncommon vowel-like character.", "vocalic r", "uncommon"],
+  ["vow_ruu", "ฤๅ", "ruu", "rue", "The long vocalic-r form adds the trailing length mark ๅ and is rare in modern use.", "long vocalic r", "rare"],
+  ["vow_lu", "ฦ", "lu", "lue", "The special vocalic-l sign is rare but part of the traditional set.", "vocalic l", "rare"],
+  ["vow_luu", "ฦๅ", "luu", "lue", "The long vocalic-l form adds the trailing length mark ๅ and is extremely rare.", "long vocalic l", "rare"]
+] as const satisfies ReadonlyArray<readonly [string, string, string, string, string, string, ContentFrequency?]>;
 
 export const vowels: ThaiCharacter[] = base.map((item, index) => ({
   id: item[0],
@@ -47,6 +47,7 @@ export const vowels: ThaiCharacter[] = base.map((item, index) => ({
   roughSound: item[3],
   mnemonic: item[4],
   exampleCue: item[5],
+  contentFrequency: item[6] ?? "common",
   learningOrder: 100 + index + 1,
   difficultyGroup: Math.floor(index / 6) + 1,
   visualSimilarities: [],

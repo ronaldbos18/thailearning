@@ -13,6 +13,18 @@ function FontSample({ label, fontClass, value, note }: { label: string; fontClas
   );
 }
 
+function ContentFrequencyBadge({ character }: { character: ThaiCharacter }) {
+  if (character.contentFrequency === "common") return null;
+  const styles = character.contentFrequency === "rare"
+    ? "border-rose-200 bg-rose-50 text-rose-700"
+    : "border-amber-200 bg-amber-50 text-amber-700";
+  return (
+    <span className={`rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wide ${styles}`}>
+      {character.contentFrequency === "rare" ? "Rare" : "Uncommon"}
+    </span>
+  );
+}
+
 function ComparisonList({ title, tone, items }: { title: string; tone: "visual" | "sound"; items: ThaiCharacter["visualSimilarities"] }) {
   if (items.length === 0) return null;
   const styles = tone === "visual" ? "border-amber-200 bg-amber-50 text-amber-950" : "border-sky-200 bg-sky-50 text-sky-950";
@@ -39,12 +51,23 @@ function ComparisonList({ title, tone, items }: { title: string; tone: "visual" 
 }
 
 export function LearningCard({ character }: { character: ThaiCharacter }) {
+  const showDottedCircleNote = character.type === "vowel" && character.thaiModern.includes("◌");
+  const showFrequencyBadge = character.contentFrequency !== "common";
+
   return (
     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="grid gap-4 sm:grid-cols-2">
         <FontSample label="Traditional" fontClass="font-traditionalThai" value={character.thaiTraditional} note="serif-style print" />
         <FontSample label="Modern" fontClass="font-modernThai" value={character.thaiModern} note="sans-style UI" />
       </div>
+      {showFrequencyBadge || showDottedCircleNote ? (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <ContentFrequencyBadge character={character} />
+          {showDottedCircleNote ? (
+            <p className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-900">The dotted circle ◌ shows where the consonant sits. It is not part of the Thai spelling.</p>
+          ) : null}
+        </div>
+      ) : null}
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl bg-slate-50 p-4">
           <p className="text-sm uppercase tracking-wide text-slate-500">Romanised name</p>

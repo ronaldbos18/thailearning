@@ -38,4 +38,7 @@ A Europe/Madrid day is complete only after at least 10 attempted questions and a
 - All IDs in `data/characters/learning-order.ts`, visual groups, and sound groups must resolve to enabled characters exactly once where uniqueness is required.
 - Similar-character relationships must be reciprocal through their configured groups and must have explicit pair-level explanations.
 - No generic fallback comparison copy should appear in learner-facing cards or feedback.
+- Non-standalone vowel signs and patterns must use dotted-circle notation (`◌`) consistently; standalone vowel-like characters (`ฤ`, `ฤๅ`, `ฦ`, `ฦๅ`) must not.
+- Rare vowels must be labelled on learning/reference cards, remain available in the character reference, appear late in configured learning order, and remain eligible for practice after deliberate introduction.
+- `ฤ` is classified as uncommon pending human review; `ฤๅ`, `ฦ`, and `ฦๅ` are classified as rare.
 - Linguistic nuance beyond visual recognition, rough romanised names, and rough sound labels remains a human-review item rather than a Phase 2 feature.

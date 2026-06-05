@@ -58,6 +58,7 @@ export const consonants: ThaiCharacter[] = base.map((item, index) => ({
   exampleCue: item[5],
   learningOrder: index + 1,
   difficultyGroup: Math.floor(index / 8) + 1,
+  contentFrequency: "common",
   visualSimilarities: [],
   soundSimilarities: [],
   enabled: true
