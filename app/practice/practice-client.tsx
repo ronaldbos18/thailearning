@@ -25,7 +25,24 @@ type Feedback = {
   masteryLevel: number;
   correctStreak: number;
   character: ThaiCharacter;
+  selectedCharacter: ThaiCharacter;
 };
+
+
+function FeedbackCharacterPanel({ label, character, tone }: { label: string; character: ThaiCharacter; tone: "correct" | "selected" }) {
+  const border = tone === "correct" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50";
+  return (
+    <div className={`rounded-2xl border p-4 ${border}`}>
+      <p className="text-xs font-black uppercase tracking-wide text-slate-600">{label}</p>
+      <div className="mt-2 flex items-end gap-3">
+        <span className="font-traditionalThai text-5xl font-black leading-none text-thai-ink">{character.thaiTraditional}</span>
+        <span className="font-modernThai text-5xl font-black leading-none text-thai-ink">{character.thaiModern}</span>
+      </div>
+      <p className="mt-2 font-bold text-slate-950">{character.romanisedName}</p>
+      <p className="text-sm text-slate-600">Rough sound: {character.roughSound}</p>
+    </div>
+  );
+}
 
 export function PracticeClient() {
   const [question, setQuestion] = useState<Question | null>(null);
@@ -100,10 +117,17 @@ export function PracticeClient() {
         <div className="space-y-4">
           <div className={`rounded-3xl p-5 ${feedback.isCorrect ? "bg-green-50 text-green-900" : "bg-red-50 text-red-900"}`}>
             <h2 className="text-2xl font-black">{feedback.isCorrect ? "Correct" : "Incorrect"}</h2>
-            <p className="mt-2">Correct answer: <strong>{feedback.correctAnswer}</strong></p>
-            {!feedback.isCorrect ? <p>You chose: <strong>{feedback.selectedAnswer}</strong></p> : null}
-            {feedback.comparison ? <p className="mt-2 rounded-xl bg-white/70 p-3 font-semibold">{feedback.comparison}</p> : null}
-            {feedback.notice ? <p className="mt-2">{feedback.notice}</p> : null}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <FeedbackCharacterPanel label="Correct answer" character={feedback.character} tone="correct" />
+              {!feedback.isCorrect ? <FeedbackCharacterPanel label="You chose" character={feedback.selectedCharacter} tone="selected" /> : null}
+            </div>
+            {feedback.comparison ? (
+              <div className="mt-4 rounded-2xl bg-white/80 p-4">
+                <p className="text-xs font-black uppercase tracking-wide text-slate-500">Why this pair is confusing</p>
+                <p className="mt-1 font-semibold text-slate-900">{feedback.comparison}</p>
+              </div>
+            ) : null}
+            {feedback.notice ? <p className="mt-3 font-semibold">{feedback.notice}</p> : null}
             <p className="mt-3">Mastery level {feedback.masteryLevel} · correct streak {feedback.correctStreak} · +{feedback.xpAwarded} XP</p>
           </div>
           <LearningCard character={feedback.character} />

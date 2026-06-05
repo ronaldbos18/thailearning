@@ -6,11 +6,11 @@ Create a private app for recognising Thai consonants and vowels visually.
 
 ## Phase 1 includes
 
-- Thai character → romanised name / rough sound multiple choice.
-- Traditional and modern Thai font display.
-- Mixed consonant/vowel learning batches of 3–5.
+- Thai character → romanised name / rough sound multiple choice using tone-free Phase 1 learner cues.
+- Traditional and modern Thai font display, labelled as serif-style print and sans-style UI examples on mobile and desktop.
+- Mixed consonant/vowel learning batches of 3–5 that start with visually distinct characters and delay high-confusion groups.
 - Learning cards before quiz exposure.
-- Confusing visual and sound comparisons.
+- Pair-specific confusing visual and sound comparisons that avoid tone rules and generic placeholder wording.
 - Server-side answer checking and progress updates.
 - XP, player level, daily streak, daily goal, mastery, review queue, and rusty recovery.
 
@@ -30,3 +30,12 @@ A Europe/Madrid day is complete only after at least 10 attempted questions and a
 - Practice answers are validated against a signed, expiring server-issued question token. The client may only submit the token and selected option ID.
 - New learning batches must match the expected next configured batch and are withheld when the active unmastered set or review backlog is too large.
 - Production auth fails closed when `THAI_APP_PASSWORD` or `THAI_APP_AUTH_SECRET` is missing, or when the local fallback secret is used.
+
+
+## Phase 1 Thai content rules
+
+- The enabled dataset must include all 44 Thai consonants and the configured 33 Phase 1 vowel recognition units.
+- All IDs in `data/characters/learning-order.ts`, visual groups, and sound groups must resolve to enabled characters exactly once where uniqueness is required.
+- Similar-character relationships must be reciprocal through their configured groups and must have explicit pair-level explanations.
+- No generic fallback comparison copy should appear in learner-facing cards or feedback.
+- Linguistic nuance beyond visual recognition, rough romanised names, and rough sound labels remains a human-review item rather than a Phase 2 feature.
