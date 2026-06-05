@@ -13,7 +13,7 @@ Phase 1 only tests Thai character → romanised name / rough sound. It does not 
 - Vowel combinations use a dotted circle (`◌`) to show where the consonant sits when a vowel appears before, above, below, after, or around it. The dotted circle is not part of Thai spelling; standalone vowel-like characters such as `ฤ`, `ฤๅ`, `ฦ`, and `ฦๅ` do not use it.
 - Traditional and modern rendering are shown side by side with Noto Serif Thai and Noto Sans Thai respectively; labels describe them as serif-style print and sans-style UI examples.
 - Comparison notes are pair-specific so learners can focus on visible stroke differences or name/sound cue differences without introducing Phase 2 tone instruction.
-- Content frequency is tracked as `common`, `uncommon`, or `rare`; rare vowels remain in the reference, are deliberately placed late in learning order, and can enter practice after introduction. `ฤ` is currently treated as uncommon, while `ฤๅ`, `ฦ`, and `ฦๅ` are treated as rare.
+- Content frequency is tracked as `common`, `uncommon`, or `rare`; rare vowels remain in the reference, are deliberately placed late in learning order, and can enter practice after introduction. Automatic learning batches unlock rare content only after at least 60 non-rare characters have been introduced, or after all non-rare characters if fewer than 60 exist in a future dataset. `ฤ` is currently treated as uncommon, while `ฤๅ`, `ฦ`, and `ฦๅ` are treated as rare.
 
 ### Human linguistic review still recommended
 

@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Refined Phase 1 Thai consonant/vowel content for complete 44-consonant and 33-vowel recognition coverage, RTGS-style learner romanisation consistency, clearer rough-sound cues, dotted-circle notation, content-frequency classification, and explicit rare/obsolete labels.
-- Reworked learning order to mix consonants and vowels early while delaying confusing visual/sound groups.
+- Reworked learning order to mix consonants and vowels early while delaying confusing visual/sound groups and gating rare automatic introductions until enough non-rare content has been introduced.
 - Replaced generic confusing-character fallbacks with pair-specific visual and sound explanations and validation tests.
 - Improved learning cards and incorrect-answer feedback with side-by-side traditional/modern font samples, rare/uncommon badges, dotted-circle guidance, and clearer comparison panels.
 - Documented Thai content conventions and remaining human linguistic review areas.
