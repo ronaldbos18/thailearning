@@ -6,3 +6,4 @@
 4. Use Vercel Preview and GitHub Actions as deployment/build validation.
 5. Tune the automatic practice engine after real usage data is available.
 6. Add richer UI snapshots or Playwright checks once the MVP stabilises.
+7. Generate and commit `package-lock.json` once npm registry access is available, then verify GitHub CI and Vercel Preview before treating PR #1 as complete.

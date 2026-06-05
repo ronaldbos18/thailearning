@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { characterById, getCharacterOrThrow } from "@/data/characters";
 import { requireAuth } from "@/lib/auth";
-import { getCharacterProgress, getDailyActivity, getProfile, processAnswerAtomically } from "@/lib/db";
-import { applyAnswerProgress, emptyProgress } from "@/lib/progress";
+import { databaseConfigured, processAnswerAtomically } from "@/lib/db";
 import { comparisonFeedback } from "@/lib/practice-engine";
 import { questionTokenHash, verifyQuestionToken } from "@/lib/question-token";
 
@@ -21,28 +20,19 @@ export async function POST(request: Request) {
   if (!token) return NextResponse.json({ error: "Question expired or invalid. Please load a new question." }, { status: 409 });
   if (!token.optionIds.includes(body.selectedCharacterId)) return NextResponse.json({ error: "Selected answer was not issued for this question." }, { status: 400 });
   const tokenHash = questionTokenHash(body.questionToken);
-  if (usedLocalTokens.has(tokenHash)) return NextResponse.json({ error: "Question was already answered. Please continue." }, { status: 409 });
+  if (!databaseConfigured() && usedLocalTokens.has(tokenHash)) return NextResponse.json({ error: "Question was already answered. Please continue." }, { status: 409 });
 
   const correct = getCharacterOrThrow(token.characterId);
   const selected = characterById.get(body.selectedCharacterId);
   if (!selected) return NextResponse.json({ error: "Unknown selected character" }, { status: 400 });
-  const [allProgress, profile, activity] = await Promise.all([getCharacterProgress(), getProfile(), getDailyActivity()]);
-  const currentProgress = allProgress.find((item) => item.characterId === correct.id) ?? emptyProgress(correct.id);
   const isCorrect = selected.id === correct.id;
-  const result = applyAnswerProgress({ progress: currentProgress, isCorrect, shownFontMode: token.shownFontMode });
   const processed = await processAnswerAtomically({
     tokenHash,
-    progress: result.progress,
-    profile,
-    activity,
-    xpDelta: result.xpAwarded,
     isCorrect,
-    masteredNow: result.masteredNow,
-    recoveredRusty: result.recoveredRusty,
-    answer: { characterId: correct.id, selectedCharacterId: selected.id, shownFontMode: token.shownFontMode, isCorrect, questionSource: token.source, answeredAt: new Date().toISOString(), xpAwarded: result.xpAwarded }
+    answer: { characterId: correct.id, selectedCharacterId: selected.id, shownFontMode: token.shownFontMode, isCorrect, questionSource: token.source, answeredAt: new Date().toISOString() }
   });
   if (!processed.processed) return NextResponse.json({ error: "Question was already answered. Please continue." }, { status: 409 });
-  usedLocalTokens.add(tokenHash);
+  if (!databaseConfigured()) usedLocalTokens.add(tokenHash);
   return NextResponse.json({
     isCorrect,
     correctAnswer: `${correct.romanisedName} — ${correct.roughSound}`,

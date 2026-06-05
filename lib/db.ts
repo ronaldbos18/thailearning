@@ -30,14 +30,14 @@ export async function getProfile(): Promise<LearnerProfile> {
     playerLevel: row.player_level,
     currentStreakDays: row.current_streak_days,
     longestStreakDays: row.longest_streak_days,
-    lastCompletedDay: row.last_completed_day
+    lastCompletedDay: serializeDate(row.last_completed_day)
   };
 }
 
 export async function getCharacterProgress(): Promise<CharacterProgress[]> {
   if (!databaseConfigured()) return [];
   const rows = await sql()`select * from character_progress order by character_id`;
-  return rows.map((row) => ({
+  return rows.map((row: any) => ({
     characterId: row.character_id,
     masteryLevel: row.mastery_level,
     correctStreak: row.correct_streak,
@@ -101,7 +101,7 @@ export async function upsertCharacterProgress(progress: CharacterProgress): Prom
 export async function recentHistory(limit = 30): Promise<AnswerHistory[]> {
   if (!databaseConfigured()) return [];
   const rows = await sql()`select * from answer_history order by response_sequence desc limit ${limit}`;
-  return rows.reverse().map((row) => ({
+  return rows.reverse().map((row: any) => ({
     id: row.id,
     characterId: row.character_id,
     shownFontMode: row.shown_font_mode,
@@ -133,7 +133,7 @@ export async function getDailyActivity(dateKey = madridDateKey()): Promise<Daily
   `;
   const row = rows[0];
   return {
-    activityDate: row.activity_date,
+    activityDate: serializeDate(row.activity_date) ?? madridDateKey(),
     questionsAttempted: row.questions_attempted,
     correctAnswers: row.correct_answers,
     incorrectAnswers: row.incorrect_answers,
@@ -145,140 +145,189 @@ export async function getDailyActivity(dateKey = madridDateKey()): Promise<Daily
   };
 }
 
-export async function updateAfterAnswer(args: { profile: LearnerProfile; activity: DailyActivity; xpDelta: number; isCorrect: boolean; masteredNow: boolean; recoveredRusty: boolean }): Promise<void> {
-  if (!databaseConfigured()) return;
-  const activityAfterAnswer: DailyActivity = {
-    ...args.activity,
-    questionsAttempted: args.activity.questionsAttempted + 1,
-    correctAnswers: args.activity.correctAnswers + (args.isCorrect ? 1 : 0),
-    incorrectAnswers: args.activity.incorrectAnswers + (args.isCorrect ? 0 : 1),
-    charactersMastered: args.activity.charactersMastered + (args.masteredNow ? 1 : 0),
-    rustyCharactersRecovered: args.activity.rustyCharactersRecovered + (args.recoveredRusty ? 1 : 0),
-    xpEarned: args.activity.xpEarned + args.xpDelta
+type ProfileRow = {
+  id: string;
+  total_xp: number;
+  player_level: number;
+  current_streak_days: number;
+  longest_streak_days: number;
+  last_completed_day: Date | string | null;
+};
+
+type DailyActivityRow = {
+  activity_date: Date | string;
+  questions_attempted: number;
+  correct_answers: number;
+  incorrect_answers: number;
+  new_characters_seen: number;
+  characters_mastered: number;
+  rusty_characters_recovered: number;
+  xp_earned: number;
+  daily_goal_completed: boolean;
+};
+
+type CharacterProgressRow = {
+  character_id: string;
+  mastery_level: number;
+  correct_streak: number;
+  total_attempts: number;
+  total_correct: number;
+  total_incorrect: number;
+  traditional_correct_count: number;
+  modern_correct_count: number;
+  both_fonts_correct_count: number;
+  first_seen_at: Date | string | null;
+  last_seen_at: Date | string | null;
+  last_correct_at: Date | string | null;
+  last_incorrect_at: Date | string | null;
+  next_review_at: Date | string | null;
+  confidence_state: CharacterProgress["confidenceState"];
+  mastered_at: Date | string | null;
+  updated_at: Date | string | null;
+};
+
+function serializeDate(value: Date | string | null): string | null {
+  if (!value) return null;
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function profileFromRow(row: ProfileRow): LearnerProfile {
+  return {
+    id: row.id,
+    totalXp: row.total_xp,
+    playerLevel: row.player_level,
+    currentStreakDays: row.current_streak_days,
+    longestStreakDays: row.longest_streak_days,
+    lastCompletedDay: serializeDate(row.last_completed_day)
   };
-  const profileAfterAnswer = { ...args.profile, totalXp: args.profile.totalXp + computed.xpAwarded, playerLevel: playerLevelForXp(args.profile.totalXp + computed.xpAwarded) };
-  const daily = applyDailyGoal(profileAfterAnswer, activityAfterAnswer);
-  await sql()`
-    update learner_profile set
-      total_xp=${daily.profile.totalXp},
-      player_level=${daily.profile.playerLevel},
-      current_streak_days=${daily.profile.currentStreakDays},
-      longest_streak_days=${daily.profile.longestStreakDays},
-      last_completed_day=${daily.profile.lastCompletedDay},
-      updated_at=now()
-    where id=${args.profile.id}
-  `;
-  await sql()`
-    update daily_activity set
-      questions_attempted=${daily.activity.questionsAttempted},
-      correct_answers=${daily.activity.correctAnswers},
-      incorrect_answers=${daily.activity.incorrectAnswers},
-      characters_mastered=${daily.activity.charactersMastered},
-      rusty_characters_recovered=${daily.activity.rustyCharactersRecovered},
-      xp_earned=${daily.activity.xpEarned},
-      daily_goal_completed=${daily.activity.dailyGoalCompleted}
-    where activity_date=${args.activity.activityDate}
-  `;
+}
+
+function dailyActivityFromRow(row: DailyActivityRow): DailyActivity {
+  return {
+    activityDate: serializeDate(row.activity_date) ?? madridDateKey(),
+    questionsAttempted: row.questions_attempted,
+    correctAnswers: row.correct_answers,
+    incorrectAnswers: row.incorrect_answers,
+    newCharactersSeen: row.new_characters_seen,
+    charactersMastered: row.characters_mastered,
+    rustyCharactersRecovered: row.rusty_characters_recovered,
+    xpEarned: row.xp_earned,
+    dailyGoalCompleted: row.daily_goal_completed
+  };
+}
+
+function characterProgressFromRow(row: CharacterProgressRow): CharacterProgress {
+  return {
+    characterId: row.character_id,
+    masteryLevel: row.mastery_level,
+    correctStreak: row.correct_streak,
+    totalAttempts: row.total_attempts,
+    totalCorrect: row.total_correct,
+    totalIncorrect: row.total_incorrect,
+    traditionalCorrectCount: row.traditional_correct_count,
+    modernCorrectCount: row.modern_correct_count,
+    bothFontsCorrectCount: row.both_fonts_correct_count,
+    firstSeenAt: serializeDate(row.first_seen_at),
+    lastSeenAt: serializeDate(row.last_seen_at),
+    lastCorrectAt: serializeDate(row.last_correct_at),
+    lastIncorrectAt: serializeDate(row.last_incorrect_at),
+    nextReviewAt: serializeDate(row.next_review_at),
+    confidenceState: row.confidence_state,
+    masteredAt: serializeDate(row.mastered_at),
+    updatedAt: serializeDate(row.updated_at)
+  };
 }
 
 export async function processAnswerAtomically(args: {
   tokenHash: string;
-  progress: CharacterProgress;
-  profile: LearnerProfile;
-  activity: DailyActivity;
-  xpDelta: number;
   isCorrect: boolean;
-  masteredNow: boolean;
-  recoveredRusty: boolean;
-  answer: Omit<AnswerHistory, "responseSequence">;
+  answer: Omit<AnswerHistory, "responseSequence" | "xpAwarded">;
 }): Promise<{ processed: boolean; progress: CharacterProgress; xpAwarded: number; masteredNow: boolean; recoveredRusty: boolean }> {
-  if (!databaseConfigured()) return { processed: true, progress: args.progress, xpAwarded: args.xpDelta, masteredNow: args.masteredNow, recoveredRusty: args.recoveredRusty };
+  if (!databaseConfigured()) {
+    const computed = applyAnswerProgress({ progress: emptyProgress(args.answer.characterId), isCorrect: args.isCorrect, shownFontMode: args.answer.shownFontMode });
+    return { processed: true, progress: computed.progress, xpAwarded: computed.xpAwarded, masteredNow: computed.masteredNow, recoveredRusty: computed.recoveredRusty };
+  }
+
+  const activityDate = madridDateKey();
   const db = sql();
-  return db.begin(async (tx) => {
+  return db.begin(async (tx: any) => {
     const inserted = await tx`
       insert into answer_history (character_id, shown_font_mode, selected_character_id, is_correct, question_source, answered_at, xp_awarded, question_token_hash)
-      values (${args.answer.characterId}, ${args.answer.shownFontMode}, ${args.answer.selectedCharacterId}, ${args.answer.isCorrect}, ${args.answer.questionSource}, ${args.answer.answeredAt}, ${args.answer.xpAwarded}, ${args.tokenHash})
+      values (${args.answer.characterId}, ${args.answer.shownFontMode}, ${args.answer.selectedCharacterId}, ${args.isCorrect}, ${args.answer.questionSource}, ${args.answer.answeredAt}, 0, ${args.tokenHash})
       on conflict (question_token_hash) do nothing
       returning response_sequence
     `;
-    if (inserted.length === 0) return { processed: false, progress: args.progress, xpAwarded: 0, masteredNow: false, recoveredRusty: false };
+    if (inserted.length === 0) return { processed: false, progress: emptyProgress(args.answer.characterId), xpAwarded: 0, masteredNow: false, recoveredRusty: false };
 
-    const lockedRows = await tx`select * from character_progress where character_id=${args.answer.characterId} for update`;
-    const lockedProgress: CharacterProgress = lockedRows.length === 0 ? emptyProgress(args.answer.characterId) : {
-      characterId: lockedRows[0].character_id,
-      masteryLevel: lockedRows[0].mastery_level,
-      correctStreak: lockedRows[0].correct_streak,
-      totalAttempts: lockedRows[0].total_attempts,
-      totalCorrect: lockedRows[0].total_correct,
-      totalIncorrect: lockedRows[0].total_incorrect,
-      traditionalCorrectCount: lockedRows[0].traditional_correct_count,
-      modernCorrectCount: lockedRows[0].modern_correct_count,
-      bothFontsCorrectCount: lockedRows[0].both_fonts_correct_count,
-      firstSeenAt: lockedRows[0].first_seen_at?.toISOString?.() ?? lockedRows[0].first_seen_at,
-      lastSeenAt: lockedRows[0].last_seen_at?.toISOString?.() ?? lockedRows[0].last_seen_at,
-      lastCorrectAt: lockedRows[0].last_correct_at?.toISOString?.() ?? lockedRows[0].last_correct_at,
-      lastIncorrectAt: lockedRows[0].last_incorrect_at?.toISOString?.() ?? lockedRows[0].last_incorrect_at,
-      nextReviewAt: lockedRows[0].next_review_at?.toISOString?.() ?? lockedRows[0].next_review_at,
-      confidenceState: lockedRows[0].confidence_state,
-      masteredAt: lockedRows[0].mastered_at?.toISOString?.() ?? lockedRows[0].mastered_at,
-      updatedAt: lockedRows[0].updated_at?.toISOString?.() ?? lockedRows[0].updated_at
-    };
+    await tx`insert into learner_profile (id) values ('solo') on conflict (id) do nothing`;
+    const profileRows = await tx`select id, total_xp, player_level, current_streak_days, longest_streak_days, last_completed_day from learner_profile where id='solo' for update`;
+    const profile = profileFromRow(profileRows[0] as ProfileRow);
+
+    await tx`insert into daily_activity (activity_date) values (${activityDate}) on conflict (activity_date) do nothing`;
+    const activityRows = await tx`select * from daily_activity where activity_date=${activityDate} for update`;
+    const activity = dailyActivityFromRow(activityRows[0] as DailyActivityRow);
+
+    await tx`insert into character_progress (character_id) values (${args.answer.characterId}) on conflict (character_id) do nothing`;
+    const progressRows = await tx`select * from character_progress where character_id=${args.answer.characterId} for update`;
+    const lockedProgress = characterProgressFromRow(progressRows[0] as CharacterProgressRow);
     const computed = applyAnswerProgress({ progress: lockedProgress, isCorrect: args.isCorrect, shownFontMode: args.answer.shownFontMode });
-    await tx`update answer_history set xp_awarded=${computed.xpAwarded} where question_token_hash=${args.tokenHash}`;
 
+    await tx`update answer_history set xp_awarded=${computed.xpAwarded} where question_token_hash=${args.tokenHash}`;
     await tx`
-      insert into character_progress (
-        character_id, mastery_level, correct_streak, total_attempts, total_correct, total_incorrect,
-        traditional_correct_count, modern_correct_count, both_fonts_correct_count, first_seen_at, last_seen_at,
-        last_correct_at, last_incorrect_at, next_review_at, confidence_state, mastered_at, updated_at
-      ) values (
-        ${computed.progress.characterId}, ${computed.progress.masteryLevel}, ${computed.progress.correctStreak}, ${computed.progress.totalAttempts}, ${computed.progress.totalCorrect}, ${computed.progress.totalIncorrect},
-        ${computed.progress.traditionalCorrectCount}, ${computed.progress.modernCorrectCount}, ${computed.progress.bothFontsCorrectCount}, ${computed.progress.firstSeenAt}, ${computed.progress.lastSeenAt},
-        ${computed.progress.lastCorrectAt}, ${computed.progress.lastIncorrectAt}, ${computed.progress.nextReviewAt}, ${computed.progress.confidenceState}, ${computed.progress.masteredAt}, now()
-      )
-      on conflict (character_id) do update set
-        mastery_level = excluded.mastery_level,
-        correct_streak = excluded.correct_streak,
-        total_attempts = excluded.total_attempts,
-        total_correct = excluded.total_correct,
-        total_incorrect = excluded.total_incorrect,
-        traditional_correct_count = excluded.traditional_correct_count,
-        modern_correct_count = excluded.modern_correct_count,
-        both_fonts_correct_count = excluded.both_fonts_correct_count,
-        first_seen_at = excluded.first_seen_at,
-        last_seen_at = excluded.last_seen_at,
-        last_correct_at = excluded.last_correct_at,
-        last_incorrect_at = excluded.last_incorrect_at,
-        next_review_at = excluded.next_review_at,
-        confidence_state = excluded.confidence_state,
-        mastered_at = excluded.mastered_at,
-        updated_at = now()
+      update character_progress set
+        mastery_level=${computed.progress.masteryLevel},
+        correct_streak=${computed.progress.correctStreak},
+        total_attempts=${computed.progress.totalAttempts},
+        total_correct=${computed.progress.totalCorrect},
+        total_incorrect=${computed.progress.totalIncorrect},
+        traditional_correct_count=${computed.progress.traditionalCorrectCount},
+        modern_correct_count=${computed.progress.modernCorrectCount},
+        both_fonts_correct_count=${computed.progress.bothFontsCorrectCount},
+        first_seen_at=${computed.progress.firstSeenAt},
+        last_seen_at=${computed.progress.lastSeenAt},
+        last_correct_at=${computed.progress.lastCorrectAt},
+        last_incorrect_at=${computed.progress.lastIncorrectAt},
+        next_review_at=${computed.progress.nextReviewAt},
+        confidence_state=${computed.progress.confidenceState},
+        mastered_at=${computed.progress.masteredAt},
+        updated_at=now()
+      where character_id=${computed.progress.characterId}
     `;
 
     const activityAfterAnswer: DailyActivity = {
-      ...args.activity,
-      questionsAttempted: args.activity.questionsAttempted + 1,
-      correctAnswers: args.activity.correctAnswers + (args.isCorrect ? 1 : 0),
-      incorrectAnswers: args.activity.incorrectAnswers + (args.isCorrect ? 0 : 1),
-      charactersMastered: args.activity.charactersMastered + (computed.masteredNow ? 1 : 0),
-      rustyCharactersRecovered: args.activity.rustyCharactersRecovered + (computed.recoveredRusty ? 1 : 0),
-      xpEarned: args.activity.xpEarned + computed.xpAwarded
+      ...activity,
+      questionsAttempted: activity.questionsAttempted + 1,
+      correctAnswers: activity.correctAnswers + (args.isCorrect ? 1 : 0),
+      incorrectAnswers: activity.incorrectAnswers + (args.isCorrect ? 0 : 1),
+      charactersMastered: activity.charactersMastered + (computed.masteredNow ? 1 : 0),
+      rustyCharactersRecovered: activity.rustyCharactersRecovered + (computed.recoveredRusty ? 1 : 0),
+      xpEarned: activity.xpEarned + computed.xpAwarded
     };
-    const profileAfterAnswer = { ...args.profile, totalXp: args.profile.totalXp + computed.xpAwarded, playerLevel: playerLevelForXp(args.profile.totalXp + computed.xpAwarded) };
+    const profileAfterAnswer = { ...profile, totalXp: profile.totalXp + computed.xpAwarded, playerLevel: playerLevelForXp(profile.totalXp + computed.xpAwarded) };
     const daily = applyDailyGoal(profileAfterAnswer, activityAfterAnswer);
+
     await tx`
       update learner_profile set
-        total_xp=${daily.profile.totalXp}, player_level=${daily.profile.playerLevel}, current_streak_days=${daily.profile.currentStreakDays},
-        longest_streak_days=${daily.profile.longestStreakDays}, last_completed_day=${daily.profile.lastCompletedDay}, updated_at=now()
-      where id=${args.profile.id}
+        total_xp=${daily.profile.totalXp},
+        player_level=${daily.profile.playerLevel},
+        current_streak_days=${daily.profile.currentStreakDays},
+        longest_streak_days=${daily.profile.longestStreakDays},
+        last_completed_day=${daily.profile.lastCompletedDay},
+        updated_at=now()
+      where id=${profile.id}
     `;
     await tx`
       update daily_activity set
-        questions_attempted=${daily.activity.questionsAttempted}, correct_answers=${daily.activity.correctAnswers}, incorrect_answers=${daily.activity.incorrectAnswers},
-        characters_mastered=${daily.activity.charactersMastered}, rusty_characters_recovered=${daily.activity.rustyCharactersRecovered},
-        xp_earned=${daily.activity.xpEarned}, daily_goal_completed=${daily.activity.dailyGoalCompleted}
-      where activity_date=${args.activity.activityDate}
+        questions_attempted=${daily.activity.questionsAttempted},
+        correct_answers=${daily.activity.correctAnswers},
+        incorrect_answers=${daily.activity.incorrectAnswers},
+        characters_mastered=${daily.activity.charactersMastered},
+        rusty_characters_recovered=${daily.activity.rustyCharactersRecovered},
+        xp_earned=${daily.activity.xpEarned},
+        daily_goal_completed=${daily.activity.dailyGoalCompleted}
+      where activity_date=${activity.activityDate}
     `;
+
     return { processed: true, progress: computed.progress, xpAwarded: computed.xpAwarded, masteredNow: computed.masteredNow, recoveredRusty: computed.recoveredRusty };
   });
 }
