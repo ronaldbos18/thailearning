@@ -1,6 +1,7 @@
 export type CharacterType = "consonant" | "vowel";
 export type FontMode = "traditional" | "modern" | "both";
 export type ConfidenceState = "new" | "fresh" | "due" | "rusty";
+export type ContentFrequency = "common" | "uncommon" | "rare";
 
 export type CharacterComparison = {
   characterId: string;
@@ -18,6 +19,7 @@ export type ThaiCharacter = {
   exampleCue?: string;
   learningOrder: number;
   difficultyGroup: number;
+  contentFrequency: ContentFrequency;
   visualSimilarities: CharacterComparison[];
   soundSimilarities: CharacterComparison[];
   enabled: boolean;

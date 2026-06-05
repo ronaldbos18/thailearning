@@ -42,6 +42,7 @@ export async function POST(request: Request) {
     xpAwarded: processed.xpAwarded,
     masteryLevel: processed.progress.masteryLevel,
     correctStreak: processed.progress.correctStreak,
-    character: correct
+    character: correct,
+    selectedCharacter: selected
   });
 }

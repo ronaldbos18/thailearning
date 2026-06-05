@@ -8,9 +8,7 @@ function explanationFor(kind: "visual" | "sound", id: string, other: string): st
   return (
     comparisonExplanations[`${kind}:${id}:${other}`] ??
     comparisonExplanations[`${kind}:${other}:${id}`] ??
-    (kind === "visual"
-      ? `This visual pair has neighbouring Thai shapes; check the exact loops, stroke height, and added marks between ${id} and ${other}.`
-      : `This sound pair shares a rough Phase 1 sound family; keep the romanised names ${id} and ${other} separate without adding tone practice.`)
+    `Missing ${kind} comparison explanation for ${id} and ${other}.`
   );
 }
 

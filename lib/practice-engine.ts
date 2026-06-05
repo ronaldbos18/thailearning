@@ -15,6 +15,7 @@ export type PracticeQuestion = {
 
 const MAX_ACTIVE_UNMASTERED = 20;
 const MAX_REVIEW_BACKLOG = 8;
+export const RARE_CONTENT_NON_RARE_INTRODUCTION_THRESHOLD = 60;
 
 function progressFor(progress: CharacterProgress[], characterId: string): CharacterProgress {
   return progress.find((item) => item.characterId === characterId) ?? emptyProgress(characterId);
@@ -45,10 +46,29 @@ export function canIntroduceNewBatch(progress: CharacterProgress[], now = new Da
   return activeUnmastered < MAX_ACTIVE_UNMASTERED && reviewBacklog(progress, now) <= MAX_REVIEW_BACKLOG;
 }
 
+export function nonRareIntroductionRequirement(): number {
+  return Math.min(RARE_CONTENT_NON_RARE_INTRODUCTION_THRESHOLD, enabledCharacters.filter((character) => character.contentFrequency !== "rare").length);
+}
+
+export function introducedNonRareCount(progress: CharacterProgress[]): number {
+  const introduced = introducedIds(progress);
+  return enabledCharacters.filter((character) => character.contentFrequency !== "rare" && introduced.has(character.id)).length;
+}
+
+export function rareContentUnlocked(progress: CharacterProgress[]): boolean {
+  return introducedNonRareCount(progress) >= nonRareIntroductionRequirement();
+}
+
+function isEligibleForNewLearning(character: ThaiCharacter, introduced: Set<string>, rareUnlocked: boolean): boolean {
+  if (introduced.has(character.id)) return false;
+  return character.contentFrequency !== "rare" || rareUnlocked;
+}
+
 export function nextLearningBatch(progress: CharacterProgress[], batchSize = 4, now = new Date()): ThaiCharacter[] {
   if (!canIntroduceNewBatch(progress, now)) return [];
   const introduced = introducedIds(progress);
-  return enabledCharacters.filter((character) => !introduced.has(character.id)).slice(0, Math.min(batchSize, 5));
+  const rareUnlocked = rareContentUnlocked(progress);
+  return enabledCharacters.filter((character) => isEligibleForNewLearning(character, introduced, rareUnlocked)).slice(0, Math.min(batchSize, 5));
 }
 
 export function expectedLearningBatchIds(progress: CharacterProgress[], batchSize = 4, now = new Date()): string[] {
