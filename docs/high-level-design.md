@@ -22,3 +22,7 @@ The engine prioritises immediate retries, rusty characters, overdue reviews, due
 ## Security
 
 No browser code receives `THAI_APP_DATABASE_URL`, passwords, or auth secrets. Server routes and API endpoints call auth validation before private work.
+
+## Thai font rendering
+
+Traditional cards use Google Fonts `Noto Serif Thai`; modern cards use Google Fonts `Noto Sans Thai`. Both are Noto-family fonts distributed under the SIL Open Font License by Google Fonts. The Tailwind classes are `font-traditionalThai` and `font-modernThai`, and both classes are used on learning cards and practice prompts.

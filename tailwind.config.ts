@@ -5,8 +5,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        modernThai: ['"Noto Sans Thai Looped"', '"Noto Sans Thai"', "sans-serif"],
-        traditionalThai: ['"Noto Serif Thai"', '"Noto Sans Thai Looped"', "serif"]
+        modernThai: ['"Noto Sans Thai"', '"Arial Unicode MS"', "sans-serif"],
+        traditionalThai: ['"Noto Serif Thai"', '"Noto Serif"', "serif"]
       },
       colors: {
         thai: {

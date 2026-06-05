@@ -26,7 +26,7 @@ describe("mastery, decay, XP, and streaks", () => {
   });
 
   it("awards correct, first-attempt, rusty recovery, and mastery XP", () => {
-    const rusty = { ...emptyProgress("con_gor_gai"), masteryLevel: 4, correctStreak: 4, traditionalCorrectCount: 1, modernCorrectCount: 0, nextReviewAt: "2026-06-01T09:00:00.000Z", confidenceState: "fresh" as const };
+    const rusty = { ...emptyProgress("con_gor_gai"), masteryLevel: 4, correctStreak: 4, totalAttempts: 10, traditionalCorrectCount: 1, modernCorrectCount: 0, nextReviewAt: "2026-06-01T09:00:00.000Z", confidenceState: "fresh" as const };
     const result = applyAnswerProgress({ progress: rusty, isCorrect: true, shownFontMode: "modern", now: new Date("2026-06-05T09:00:00.000Z") });
     expect(result.masteredNow).toBe(true);
     expect(result.recoveredRusty).toBe(true);

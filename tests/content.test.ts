@@ -14,6 +14,7 @@ describe("Thai content", () => {
       for (const comparison of [...character.visualSimilarities, ...character.soundSimilarities]) {
         expect(characterById.has(comparison.characterId)).toBe(true);
         expect(comparison.explanation.length).toBeGreaterThan(10);
+        expect(comparison.explanation).not.toMatch(/Compare the concrete|romanised clue is close/);
       }
     }
   });

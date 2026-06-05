@@ -24,3 +24,9 @@ Create a private app for recognising Thai consonants and vowels visually.
 ## Daily goal
 
 A Europe/Madrid day is complete only after at least 10 attempted questions and at least 5 correct answers.
+
+## Current implementation constraints
+
+- Practice answers are validated against a signed, expiring server-issued question token. The client may only submit the token and selected option ID.
+- New learning batches must match the expected next configured batch and are withheld when the active unmastered set or review backlog is too large.
+- Production auth fails closed when `THAI_APP_PASSWORD` or `THAI_APP_AUTH_SECRET` is missing, or when the local fallback secret is used.

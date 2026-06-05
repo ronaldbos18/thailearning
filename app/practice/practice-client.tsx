@@ -6,6 +6,7 @@ import type { FontMode, ThaiCharacter } from "@/data/characters/types";
 
 type Question = {
   needsLearning?: boolean;
+  questionToken: string;
   characterId: string;
   thaiTraditional: string;
   thaiModern: string;
@@ -30,30 +31,49 @@ export function PracticeClient() {
   const [question, setQuestion] = useState<Question | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   async function loadQuestion() {
     setLoading(true);
+    setError(null);
     setFeedback(null);
-    const response = await fetch("/api/practice/next", { cache: "no-store" });
-    setQuestion(await response.json());
-    setLoading(false);
+    try {
+      const response = await fetch("/api/practice/next", { cache: "no-store" });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data) throw new Error(data?.error ?? "Could not load the next question.");
+      setQuestion(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not load the next question.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { void loadQuestion(); }, []);
 
   async function answer(selectedCharacterId: string) {
-    if (!question) return;
-    setLoading(true);
-    const response = await fetch("/api/practice/answer", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ characterId: question.characterId, selectedCharacterId, shownFontMode: question.shownFontMode, source: question.source })
-    });
-    setFeedback(await response.json());
-    setLoading(false);
+    if (!question || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/practice/answer", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ questionToken: question.questionToken, selectedCharacterId })
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data) throw new Error(data?.error ?? "Could not submit the answer.");
+      setFeedback(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not submit the answer.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (loading && !question && !feedback) return <p className="rounded-2xl bg-white p-6">Loading practice…</p>;
+  if (error) return <div className="mt-6 rounded-2xl bg-red-50 p-6 font-semibold text-red-900"><p>{error}</p><button onClick={() => void loadQuestion()} className="mt-3 rounded-xl bg-red-900 px-4 py-2 text-white">Reload question</button></div>;
   if (question?.needsLearning) {
     return <p className="mt-6 rounded-2xl bg-amber-50 p-6 font-semibold text-amber-900">Learn a character batch first. New characters must be seen as learning cards before practice.</p>;
   }
@@ -69,7 +89,7 @@ export function PracticeClient() {
         {!feedback ? (
           <div className="mt-6 grid gap-3">
             {question?.options.map((option) => (
-              <button key={option.id} disabled={loading} onClick={() => void answer(option.id)} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left font-bold hover:border-sky-400 hover:bg-sky-50">
+              <button key={option.id} disabled={submitting || Boolean(feedback)} onClick={() => void answer(option.id)} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left font-bold hover:border-sky-400 hover:bg-sky-50">
                 {option.label}
               </button>
             ))}

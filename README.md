@@ -43,4 +43,4 @@ npm test
 npm run build
 ```
 
-GitHub Actions and Vercel Preview remain the source of truth for PR validation.
+GitHub Actions and Vercel Preview remain the source of truth for PR validation. Pull requests are not considered complete until `npm ci`, typecheck, tests, Next build, and Vercel Preview pass.

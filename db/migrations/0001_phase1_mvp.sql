@@ -40,7 +40,8 @@ create table if not exists answer_history (
   question_source text not null,
   response_sequence bigint generated always as identity,
   answered_at timestamptz not null default now(),
-  xp_awarded integer not null default 0 check (xp_awarded >= 0)
+  xp_awarded integer not null default 0 check (xp_awarded >= 0),
+  question_token_hash text unique
 );
 
 create index if not exists answer_history_character_answered_idx on answer_history (character_id, answered_at desc);

@@ -8,7 +8,8 @@ export const visualGroups = [
   ["con_sor_sala", "con_sor_ruesi", "con_sor_suea"],
   ["vow_sara_i", "vow_sara_ii", "vow_sara_ue", "vow_sara_uee"],
   ["vow_sara_u", "vow_sara_uu"],
-  ["vow_sara_ai_mai_muan", "vow_sara_ai_mai_malai"]
+  ["vow_sara_ai_mai_muan", "vow_sara_ai_mai_malai"],
+  ["vow_sara_e", "vow_sara_ae", "vow_sara_o"]
 ];
 
 export const soundGroups = [
@@ -26,3 +27,34 @@ export const soundGroups = [
   ["vow_sara_i", "vow_sara_ii"],
   ["vow_sara_u", "vow_sara_uu"]
 ];
+
+export const comparisonExplanations: Record<string, string> = {
+  "visual:con_kor_khai:con_kor_kwai": "ข is taller and more angular on the left; ค is rounder with a lower buffalo-horn curve.",
+  "visual:con_kor_khai:con_kor_rakhang": "ข has a simple tall scoop; ฆ adds a more complex bell-like lower loop.",
+  "visual:con_chor_chang:con_sor_so": "ช has a smoother elephant-trunk left stroke; ซ has a sharper zigzag chain-like bend.",
+  "visual:con_dor_dek:con_tor_tao": "ด has a smoother closed top; ต has a visible bite/notch at the top like a turtle shell.",
+  "visual:con_bor_baimai:con_por_pla": "บ is a plain bowl; ป adds a tall vertical stem on the left.",
+  "visual:con_phor_phueng:con_for_fa": "ผ has two balanced low strokes; ฝ keeps the shape but adds a taller left spine.",
+  "visual:con_phor_phan:con_for_fan": "พ has two rounded humps; ฟ adds a taller tooth rising above the first hump.",
+  "visual:con_ror_ruea:con_lor_ling": "ร is compact like a small boat curl; ล stretches into a taller monkey-like loop.",
+  "visual:con_sor_sala:con_sor_suea": "ศ has a pavilion-like roof and straighter upper stroke; ส has a high sweeping tiger head.",
+  "visual:con_sor_ruesi:con_sor_suea": "ษ has a lower hermit curve; ส has the prominent high head and open lower shape.",
+  "visual:vow_sara_i:vow_sara_ii": "ิ is the short roof; ี extends the mark with a longer tail for the long sound.",
+  "visual:vow_sara_i:vow_sara_ue": "ิ is a plain roof; ึ adds a small nub underneath the roof.",
+  "visual:vow_sara_ue:vow_sara_uee": "ึ is compact with one lower nub; ื stretches wider with paired top marks.",
+  "visual:vow_sara_u:vow_sara_uu": "ุ is the short lower mark; ู hangs lower with a longer looped tail.",
+  "visual:vow_sara_ai_mai_muan:vow_sara_ai_mai_malai": "ใ curls inward near the top; ไ is taller and more open.",
+  "visual:vow_sara_e:vow_sara_ae": "เ is one leading vertical mark; แ is a doubled leading mark.",
+  "visual:vow_sara_e:vow_sara_o": "เ is plain; โ adds a rounded top loop.",
+  "sound:con_kor_khai:con_kor_kwai": "Both use a kh-style clue; keep the name cue egg (khai) versus buffalo (kwai) separate.",
+  "sound:con_chor_ching:con_chor_chang": "Both use ch-style clues; use cymbal (ching) versus elephant (chang) as the recognition label.",
+  "sound:con_sor_so:con_sor_suea": "Both are s-style clues; chain (so) and tiger (suea) are different romanised names.",
+  "sound:con_dor_dek:con_dor_chada": "Both are d-style clues; child (dek) is the common form, while cha-da names the headdress character.",
+  "sound:con_tor_tao:con_tor_patak": "Both are t-style clues; turtle (tao) and goad (pa-tak) have different name cues.",
+  "sound:con_bor_baimai:con_por_pla": "The labels are close b/p clues; leaf (bai mai) versus fish (pla) keeps them distinct.",
+  "sound:con_for_fa:con_for_fan": "Both are f-style clues; lid (fa) and teeth (fan) differ by name cue and tall stroke placement.",
+  "sound:con_hor_hip:con_hor_nokhuk": "Both are h-style clues; chest (hip) is simpler, owl (nok huk) has the extra marked tail.",
+  "sound:vow_sara_i:vow_sara_ii": "Both are i-family labels; short sara i and long sara ii differ by mark length.",
+  "sound:vow_sara_u:vow_sara_uu": "Both are u-family labels; short sara u and long sara uu differ by lower-tail length.",
+  "sound:vow_sara_ai_mai_muan:vow_sara_ai_mai_malai": "Both are ai labels; use mai muan for the inward curl and mai malai for the tall open form."
+};

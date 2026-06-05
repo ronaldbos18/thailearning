@@ -30,6 +30,27 @@ describe("practice engine", () => {
     expect(selectNextCharacter({ progress, history, now }).source).toBe("immediate_retry");
   });
 
+
+  it("uses the latest repeated mistake when scheduling immediate retries", () => {
+    const progress = ["con_gor_gai", "con_ngor_ngu", "vow_sara_aa", "vow_sara_i"].map((id) => ({ ...emptyProgress(id), firstSeenAt: now.toISOString(), masteryLevel: 1 }));
+    const history = [
+      answer("con_gor_gai", "con_ngor_ngu", false, 1),
+      answer("con_ngor_ngu", "con_ngor_ngu", true, 2),
+      answer("vow_sara_aa", "vow_sara_aa", true, 3),
+      answer("con_gor_gai", "con_ngor_ngu", false, 4),
+      answer("con_ngor_ngu", "con_ngor_ngu", true, 5),
+      answer("vow_sara_i", "vow_sara_i", true, 6)
+    ];
+    expect(selectNextCharacter({ progress, history, now }).source).toBe("immediate_retry");
+    expect(selectNextCharacter({ progress, history, now }).character.id).toBe("con_gor_gai");
+  });
+
+  it("rotates eligible review characters instead of always picking the first", () => {
+    const progress = ["con_gor_gai", "con_ngor_ngu", "vow_sara_aa"].map((id) => ({ ...emptyProgress(id), firstSeenAt: now.toISOString(), masteryLevel: 4 }));
+    const history = [answer("con_gor_gai", "con_gor_gai", true, 1), answer("con_ngor_ngu", "con_ngor_ngu", true, 2)];
+    expect(selectNextCharacter({ progress, history, now, rng: () => 0.5 }).character.id).toBe("vow_sara_aa");
+  });
+
   it("creates Thai-to-English multiple choice questions only", () => {
     const question = createQuestion({ progress: [], history: [], now });
     expect(question.options).toHaveLength(4);

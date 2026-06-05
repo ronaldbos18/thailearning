@@ -14,7 +14,7 @@ export default async function LearnPage() {
       <Nav />
       <h1 className="text-3xl font-black">Learn new characters</h1>
       <p className="mt-2 text-slate-600">New consonants and vowels are introduced in mixed batches of 3–5 before they can appear in quiz practice.</p>
-      {batch.length === 0 ? <p className="mt-6 rounded-2xl bg-white p-6">All enabled characters have been introduced.</p> : null}
+      {batch.length === 0 ? <p className="mt-6 rounded-2xl bg-white p-6">No new batch is available yet. Finish due reviews or master more active characters first.</p> : null}
       <form action={introduceCharactersAction} className="mt-6">
         <div className="thai-card-grid">
           {batch.map((character) => (
