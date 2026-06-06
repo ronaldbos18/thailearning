@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LearningCard } from "@/components/learning-card";
+import { CharacterKnowledgeBadges, FontModeBadge, LearningCard } from "@/components/learning-card";
 import type { FontMode, ThaiCharacter } from "@/data/characters/types";
 
 type Question = {
@@ -34,9 +34,18 @@ function FeedbackCharacterPanel({ label, character, tone }: { label: string; cha
   return (
     <div className={`rounded-2xl border p-4 ${border}`}>
       <p className="text-xs font-black uppercase tracking-wide text-slate-600">{label}</p>
-      <div className="mt-2 flex items-end gap-3">
-        <span className="font-traditionalThai text-5xl font-black leading-none text-thai-ink">{character.thaiTraditional}</span>
-        <span className="font-modernThai text-5xl font-black leading-none text-thai-ink">{character.thaiModern}</span>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <CharacterKnowledgeBadges character={character} />
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <div>
+          <FontModeBadge label="Traditional" />
+          <span className="font-traditionalThai mt-2 block text-5xl font-black leading-none text-thai-ink">{character.thaiTraditional}</span>
+        </div>
+        <div>
+          <FontModeBadge label="Modern" />
+          <span className="font-modernThai mt-2 block text-5xl font-black leading-none text-thai-ink">{character.thaiModern}</span>
+        </div>
       </div>
       <p className="mt-2 font-bold text-slate-950">{character.romanisedName}</p>
       <p className="text-sm text-slate-600">Rough sound: {character.roughSound}</p>

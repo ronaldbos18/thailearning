@@ -1,4 +1,4 @@
-import { LearningCard } from "@/components/learning-card";
+import { CharacterKnowledgeBadges, FontModeBadge, LearningCard } from "@/components/learning-card";
 import { Nav } from "@/components/nav";
 import { enabledCharacters } from "@/data/characters";
 import { requireAuth } from "@/lib/auth";
@@ -18,15 +18,32 @@ export default async function CharactersPage({ searchParams }: { searchParams: P
         <aside className="max-h-[70vh] overflow-auto rounded-3xl bg-white p-3 shadow-sm">
           {enabledCharacters.map((character) => {
             const item = progress.find((p) => p.characterId === character.id) ?? emptyProgress(character.id);
+            const isSelected = character.id === selected.id;
             return (
-              <a key={character.id} href={`/characters?id=${character.id}`} className={`mb-2 flex items-center gap-3 rounded-2xl p-3 hover:bg-slate-50 ${character.id === selected.id ? "bg-sky-50" : ""}`}>
-                <span className="font-modernThai text-3xl font-bold">{character.thaiModern}</span>
-                <span><strong>{character.romanisedName}</strong><br /><small>Level {item.masteryLevel} · {confidenceFor(item)}</small></span>
-              </a>
+              <div key={character.id} className="mb-2">
+                <a href={`/characters?id=${character.id}`} className={`block rounded-2xl p-3 hover:bg-slate-50 ${isSelected ? "bg-sky-50" : ""}`}>
+                  <div className="mb-2 flex min-h-7 flex-wrap items-center gap-2">
+                    <CharacterKnowledgeBadges character={character} />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-traditionalThai text-3xl font-bold text-thai-ink">{character.thaiTraditional}</span>
+                    <span className="font-modernThai text-3xl font-bold text-thai-ink">{character.thaiModern}</span>
+                    <span className="min-w-0">
+                      <strong>{character.romanisedName}</strong><br />
+                      <small>Level {item.masteryLevel} · {confidenceFor(item)}</small>
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <FontModeBadge label="Traditional" />
+                    <FontModeBadge label="Modern" />
+                  </div>
+                </a>
+                {isSelected ? <div className="mt-2 lg:hidden"><LearningCard character={selected} /></div> : null}
+              </div>
             );
           })}
         </aside>
-        <section className="space-y-4">
+        <section className="hidden space-y-4 lg:block">
           <div className="rounded-3xl bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">Status</h2>
             <p>Mastery level {selectedProgress.masteryLevel}; confidence {confidenceFor(selectedProgress)}; streak {selectedProgress.correctStreak}; attempts {selectedProgress.totalAttempts}.</p>

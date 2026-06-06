@@ -1,4 +1,9 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { CharacterKnowledgeBadges, LearningCard } from "@/components/learning-card";
 import { enabledCharacters, characterById } from "@/data/characters";
 import { comparisonExplanations, soundGroups, visualGroups } from "@/data/characters/confusing-groups";
 import { learningOrder } from "@/data/characters/learning-order";
@@ -71,6 +76,91 @@ describe("Thai content", () => {
       expect(vowel?.contentFrequency).toBe("rare");
     }
     expect(characterById.get("vow_ru")?.contentFrequency).toBe("uncommon");
+  });
+
+
+  it("provides valid informational consonant class and vowel length/category metadata", () => {
+    const validConsonantClasses = new Set(["low", "mid", "high"]);
+    const validVowelCategories = new Set(["short", "long", "standalone"]);
+
+    for (const consonant of enabledCharacters.filter((c) => c.type === "consonant")) {
+      expect(validConsonantClasses.has(consonant.consonantClass ?? ""), consonant.id).toBe(true);
+      expect(consonant.vowelLengthCategory, consonant.id).toBeUndefined();
+    }
+
+    for (const vowel of enabledCharacters.filter((c) => c.type === "vowel")) {
+      expect(validVowelCategories.has(vowel.vowelLengthCategory ?? ""), vowel.id).toBe(true);
+      expect(vowel.consonantClass, vowel.id).toBeUndefined();
+    }
+  });
+
+
+  it("character reference list renders both traditional and modern forms", () => {
+    const source = readFileSync(join(process.cwd(), "app/characters/page.tsx"), "utf8");
+    expect(source).toContain("character.thaiTraditional");
+    expect(source).toContain("character.thaiModern");
+    expect(source.indexOf("character.thaiTraditional")).toBeLessThan(source.indexOf("character.thaiModern"));
+  });
+
+  it("removed dotted-circle explanatory copy is absent from UI and docs", () => {
+    const files = [
+      "README.md",
+      "docs/requirements.md",
+      "CHANGELOG.md",
+      "app/learn/page.tsx",
+      "app/characters/page.tsx",
+      "components/learning-card.tsx"
+    ];
+    for (const file of files) {
+      const source = readFileSync(join(process.cwd(), file), "utf8");
+      expect(source, file).not.toMatch(/The dotted circle ◌ shows where the consonant sits/i);
+      expect(source, file).not.toMatch(/not part of (the )?Thai spelling/i);
+    }
+  });
+
+  it("renders traditional and modern forms, top metadata badges, and class/length labels in card UI", () => {
+    const uncommonVowel = characterById.get("vow_ru");
+    const consonant = characterById.get("con_gor_gai");
+    const vowel = characterById.get("vow_sara_a");
+    expect(uncommonVowel).toBeTruthy();
+    expect(consonant).toBeTruthy();
+    expect(vowel).toBeTruthy();
+
+    const rareMarkup = renderToStaticMarkup(createElement(LearningCard, { character: uncommonVowel! }));
+    expect(rareMarkup).toContain("Traditional");
+    expect(rareMarkup).toContain("Modern");
+    expect(rareMarkup.indexOf("Uncommon")).toBeGreaterThan(-1);
+    expect(rareMarkup.indexOf("Uncommon")).toBeLessThan(rareMarkup.indexOf("Traditional"));
+    expect(rareMarkup).toContain("standalone vowel");
+
+    const consonantMarkup = renderToStaticMarkup(createElement(CharacterKnowledgeBadges, { character: consonant! }));
+    expect(consonantMarkup).toContain("mid class");
+
+    const vowelMarkup = renderToStaticMarkup(createElement(CharacterKnowledgeBadges, { character: vowel! }));
+    expect(vowelMarkup).toContain("short vowel");
+  });
+
+  it("shows visual comparisons with Thai character, romanised name, rough sound, and explanation", () => {
+    const character = enabledCharacters.find((item) => item.visualSimilarities.length > 0);
+    expect(character, "expected at least one visual comparison").toBeTruthy();
+    const comparison = character!.visualSimilarities[0];
+    const other = characterById.get(comparison.characterId);
+    expect(other).toBeTruthy();
+
+    const markup = renderToStaticMarkup(createElement(LearningCard, { character: character! }));
+    expect(markup).toContain("Visual check");
+    expect(markup).toContain(other!.thaiModern);
+    expect(markup).toContain(other!.romanisedName);
+    expect(markup).toContain(`Sound: ${other!.roughSound}`);
+    expect(markup).toContain(comparison.explanation);
+  });
+
+  it("does not render the removed dotted-circle explanatory text", () => {
+    const vowel = characterById.get("vow_sara_a");
+    expect(vowel).toBeTruthy();
+    const markup = renderToStaticMarkup(createElement(LearningCard, { character: vowel! }));
+    expect(markup).not.toMatch(/dotted circle/i);
+    expect(markup).not.toContain("The dotted circle ◌ shows where the consonant sits. It is not part of the Thai spelling.");
   });
 
   it("keeps rare vowels late and out of early learning batches", () => {
