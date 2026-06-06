@@ -7,7 +7,7 @@ Create a private app for recognising Thai consonants and vowels visually.
 ## Phase 1 includes
 
 - Thai character → romanised name / rough sound multiple choice using tone-free Phase 1 learner cues.
-- Traditional and modern Thai font display, labelled as serif-style print and sans-style UI examples on mobile and desktop.
+- Traditional and modern Thai font display, labelled with consistent colours as serif-style print and sans-style UI examples on mobile and desktop.
 - Mixed consonant/vowel learning batches of 3–5 that start with visually distinct characters and delay high-confusion groups.
 - Learning cards before quiz exposure.
 - Pair-specific confusing visual and sound comparisons that avoid tone rules and generic placeholder wording.
@@ -39,7 +39,9 @@ A Europe/Madrid day is complete only after at least 10 attempted questions and a
 - Similar-character relationships must be reciprocal through their configured groups and must have explicit pair-level explanations.
 - No generic fallback comparison copy should appear in learner-facing cards or feedback.
 - Non-standalone vowel signs and patterns must use dotted-circle notation (`◌`) consistently; standalone vowel-like characters (`ฤ`, `ฤๅ`, `ฦ`, `ฦๅ`) must not.
-- Rare vowels must be labelled on learning/reference cards, remain available in the character reference, appear late in configured learning order, and remain eligible for practice after deliberate introduction.
+- Consonants must carry informational low/mid/high class metadata and display colour-coded class labels on learning and reference cards without being tested.
+- Vowels must carry informational short/long/standalone metadata and display colour-coded category labels on learning and reference cards without being tested.
+- Rare and uncommon vowels must be labelled near the top of learning/reference cards, remain available in the character reference, appear late where configured, and remain eligible for practice after deliberate introduction.
 - Automatic learning batches must withhold rare characters until at least 60 non-rare characters have been introduced, or until all non-rare characters have been introduced if a future dataset contains fewer than 60 non-rare characters. Once introduced, rare characters use the same practice, mastery, review, decay, and progress rules as other characters.
 - `ฤ` is classified as uncommon pending human review; `ฤๅ`, `ฦ`, and `ฦๅ` are classified as rare.
 - Linguistic nuance beyond visual recognition, rough romanised names, and rough sound labels remains a human-review item rather than a Phase 2 feature.

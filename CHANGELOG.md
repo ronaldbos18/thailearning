@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Updated character reference and learning-card UI to show traditional and modern forms together, use consistent coloured font labels, place rare/uncommon metadata near the top, render mobile character details inline below the selected item, and expand visual comparisons with Thai glyphs plus rough sounds.
+- Added informational consonant class and vowel length/category metadata with colour-coded UI labels and validation coverage; removed dotted-circle explanatory copy while retaining vowel notation.
 - Refined Phase 1 Thai consonant/vowel content for complete 44-consonant and 33-vowel recognition coverage, RTGS-style learner romanisation consistency, clearer rough-sound cues, dotted-circle notation, content-frequency classification, and explicit rare/obsolete labels.
 - Reworked learning order to mix consonants and vowels early while delaying confusing visual/sound groups and gating rare automatic introductions until enough non-rare content has been introduced.
 - Replaced generic confusing-character fallbacks with pair-specific visual and sound explanations and validation tests.
